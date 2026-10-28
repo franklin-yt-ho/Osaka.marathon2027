@@ -3,52 +3,52 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>大阪馬拉松 Sub-4:15 訓練儀表板 · 第 4–21 週</title>
+<title>大阪馬拉松 Sub-4:15 訓練儀表板 · 第 4–23 週</title>
 <style>
   :root{
-    --bg:#0f1220; --card:#1a1e33; --card2:#212642; --text:#eef0ff; --muted:#9aa0c3;
-    --speed:#ff5c6c; --mpace:#ff9f43; --lsd:#4d8cff; --easy:#3ddc97; --gym:#b57bff;
-    --rest:#4a4f6e; --race:#ffd54d; --travel:#63d3e0; --ok:#3ddc97;
+    --bg:#f8f5f2; --card:#ffffff; --card2:#f2eee9; --text:#22252e; --muted:#8a8fa3;
+    --speed:#e03131; --mpace:#e8590c; --lsd:#1971c2; --easy:#0ca678; --gym:#9c36b5;
+    --rest:#adb5bd; --race:#f59f00; --travel:#0c8599; --ok:#0ca678;
   }
   *{box-sizing:border-box;margin:0;padding:0;font-family:"PingFang TC","Microsoft JhengHei",system-ui,sans-serif}
   body{background:var(--bg);color:var(--text);min-height:100vh;padding:22px 14px 70px}
   .wrap{max-width:1040px;margin:0 auto}
   h1{font-size:23px;letter-spacing:.5px}
   .sub{color:var(--muted);margin:6px 0 10px;font-size:13px}
-  .goal{display:inline-block;background:linear-gradient(90deg,#ff5c6c,#ff9f43);padding:4px 14px;border-radius:20px;font-weight:700;font-size:13px;margin-bottom:14px}
+  .goal{display:inline-block;background:linear-gradient(135deg,#e03131,#ff922b);color:#fff;padding:4px 14px;border-radius:20px;font-weight:700;font-size:13px;margin-bottom:14px}
 
   .tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
-  .tab{cursor:pointer;border:1px solid #34395c;background:var(--card);color:var(--muted);
+  .tab{cursor:pointer;border:1px solid #e5dfd7;background:var(--card);color:var(--muted);
        padding:6px 11px;border-radius:10px;font-size:12px;transition:.15s;font-weight:600}
   .tab:hover{color:var(--text)}
-  .tab.active{background:linear-gradient(135deg,#4d8cff,#b57bff);color:#fff;border-color:transparent}
+  .tab.active{background:linear-gradient(135deg,#e03131,#ff922b);color:#fff;border-color:transparent}
   .tab.done{box-shadow:inset 0 0 0 1px rgba(61,220,151,.5)}
 
   .overview{background:var(--card);border-radius:16px;padding:16px}
   .overview h3{font-size:14px;margin-bottom:12px}
   .bars{display:flex;align-items:flex-end;gap:5px;height:120px}
   .bcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;height:100%;justify-content:flex-end}
-  .bcol .bar{width:100%;max-width:34px;border-radius:5px 5px 0 0;background:linear-gradient(180deg,#4d8cff,#b57bff);transition:.2s}
+  .bcol .bar{width:100%;max-width:34px;border-radius:5px 5px 0 0;background:linear-gradient(180deg,#ff8787,#e03131);transition:.2s}
   .bcol:hover .bar{filter:brightness(1.35)}
-  .bcol.active .bar{background:linear-gradient(180deg,#ff9f43,#ff5c6c)}
+  .bcol.active .bar{background:linear-gradient(180deg,#e03131,#a61e1e)}
   .bcol .bv{font-size:10px;color:var(--muted);font-weight:700}
   .bcol .bl{font-size:9px;color:var(--muted)}
 
   .weekhead{display:flex;justify-content:space-between;align-items:center;margin:22px 0 10px;flex-wrap:wrap;gap:8px}
   .weekhead h2{font-size:18px}
   .weekhead .dates{color:var(--muted);font-size:12px;margin-top:3px}
-  .badge{font-size:12px;padding:4px 10px;border-radius:8px;background:var(--card2);color:var(--muted)}
+  .badge{font-size:12px;padding:4px 10px;border-radius:8px;background:var(--card2);color:var(--muted);border:1px solid #e5dfd7}
   .badge.race{background:rgba(255,213,77,.15);color:var(--race);border:1px solid rgba(255,213,77,.4)}
   .badge.holiday{background:rgba(99,211,224,.14);color:var(--travel);border:1px solid rgba(99,211,224,.4)}
-  .nav button{cursor:pointer;background:var(--card2);color:var(--text);border:1px solid #34395c;
+  .nav button{cursor:pointer;background:var(--card2);color:var(--text);border:1px solid #e0dad2;
               padding:7px 16px;border-radius:10px;font-size:13px;font-weight:600;margin-left:6px}
   .nav button:disabled{opacity:.3;cursor:default}
 
   .progwrap{background:var(--card);border-radius:12px;padding:10px 14px;margin-bottom:10px;font-size:12px;color:var(--muted)}
   .progwrap .top{display:flex;justify-content:space-between;margin-bottom:6px}
   .progwrap .top b{color:var(--text);font-size:13px}
-  .track{background:#2a2f4e;border-radius:8px;height:10px;overflow:hidden}
-  .fill2{height:100%;background:linear-gradient(90deg,#3ddc97,#4d8cff);transition:.3s}
+  .track{background:#e9e4de;border-radius:8px;height:10px;overflow:hidden}
+  .fill2{height:100%;background:linear-gradient(90deg,#0ca678,#1971c2);transition:.3s}
 
   .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:9px;margin-bottom:12px}
   .stat{background:var(--card);border-radius:13px;padding:12px;text-align:center}
@@ -69,17 +69,17 @@
   .rec h4{font-size:13px;margin-bottom:9px;color:var(--travel)}
   .recline{display:flex;gap:8px;flex-wrap:wrap}
   .chip{cursor:pointer;display:inline-flex;align-items:center;gap:6px;background:var(--card2);
-        border:1px solid #34395c;padding:6px 11px;border-radius:20px;font-size:12px;color:var(--muted);transition:.15s;user-select:none}
+        border:1px solid #e0dad2;padding:6px 11px;border-radius:20px;font-size:12px;color:var(--muted);transition:.15s;user-select:none}
   .chip:hover{color:var(--text)}
   .chip.on{background:rgba(61,220,151,.16);border-color:rgba(61,220,151,.55);color:var(--ok);font-weight:700}
-  .chip .bx{width:14px;height:14px;border-radius:4px;border:1.5px solid #5a6089;display:inline-block;position:relative}
+  .chip .bx{width:14px;height:14px;border-radius:4px;border:1.5px solid #b4b8c6;display:inline-block;position:relative}
   .chip.on .bx{background:var(--ok);border-color:var(--ok)}
-  .chip.on .bx:after{content:"✓";position:absolute;inset:0;font-size:11px;color:#0f1220;display:flex;align-items:center;justify-content:center;font-weight:900}
+  .chip.on .bx:after{content:"✓";position:absolute;inset:0;font-size:11px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900}
   .chip.milk.on{background:rgba(255,213,77,.14);border-color:rgba(255,213,77,.5);color:var(--race)}
 
   /* day slots */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:9px}
-  .slot{background:rgba(255,255,255,.03);border:1px dashed #3a3f63;border-radius:13px;padding:8px;min-height:120px}
+  .slot{background:rgba(0,0,0,.02);border:1px dashed #d8d2c8;border-radius:13px;padding:8px;min-height:120px}
   .slot.over{border-color:var(--mpace);background:rgba(255,159,67,.08)}
   .slotlbl{font-size:11px;color:var(--muted);font-weight:800;margin-bottom:6px;display:flex;justify-content:space-between}
   .slotlbl .dnum{font-size:10px;opacity:.7}
@@ -92,14 +92,16 @@
   .card .nm{font-size:13px;font-weight:800;margin-bottom:4px;line-height:1.4}
   .card .dt{font-size:11.5px;color:var(--muted);line-height:1.65}
   .card .dt b{color:var(--text)}
-  .card.done{opacity:.6}
+  .card .dt .tip{display:block;margin-top:5px;padding:6px 8px;background:#fdf0ee;border-left:3px solid var(--speed);border-radius:6px;color:#b02525;font-size:11px;line-height:1.6}
+  .combobtn.on{background:rgba(232,89,12,.12)!important;color:var(--mpace)!important;font-weight:800}
+  .card.done{opacity:.65}
   .card.done .nm{text-decoration:line-through}
   .card.done:after{content:"✓ 完成";position:absolute;top:8px;right:10px;font-size:10px;font-weight:800;color:var(--ok);
-                   background:rgba(61,220,151,.15);padding:2px 7px;border-radius:6px}
-  .btn{cursor:pointer;margin-top:8px;width:100%;border:none;background:#2a2f4e;color:var(--muted);
+                   background:rgba(12,166,120,.12);padding:2px 7px;border-radius:6px}
+  .btn{cursor:pointer;margin-top:8px;width:100%;border:none;background:#f1ede7;color:#8a8fa3;
        padding:6px;border-radius:8px;font-size:11.5px;font-weight:700;transition:.15s}
-  .btn:hover{background:#34395c;color:var(--text)}
-  .card.done .btn{background:rgba(61,220,151,.18);color:var(--ok)}
+  .btn:hover{background:#e8e2da;color:var(--text)}
+  .card.done .btn{background:rgba(12,166,120,.12);color:var(--ok)}
   .km{font-size:10px;color:var(--muted);margin-top:4px}
   .tag{font-size:10px;padding:2px 7px;border-radius:6px;font-weight:700}
   .t-speed{background:rgba(255,92,108,.15);color:var(--speed)}
@@ -125,17 +127,17 @@
   .cloudbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
             background:var(--card);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:12.5px}
   .cbinfo{display:flex;align-items:center;gap:8px;color:var(--muted)}
-  .cbdot{width:9px;height:9px;border-radius:50%;background:#6b7194;flex:none}
+  .cbdot{width:9px;height:9px;border-radius:50%;background:#b4b8c6;flex:none}
   .cbdot.on{background:var(--ok);box-shadow:0 0 8px rgba(61,220,151,.7)}
   .cbdot.sync{background:var(--race);animation:pulse 1s infinite}
   .cbdot.err{background:var(--speed)}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
   .cbbtns{display:flex;gap:6px;flex-wrap:wrap}
-  .cbbtns button{cursor:pointer;border:1px solid #34395c;background:var(--card2);color:var(--text);
+  .cbbtns button{cursor:pointer;border:1px solid #e0dad2;background:var(--card2);color:var(--text);
                  padding:6px 12px;border-radius:9px;font-size:12px;font-weight:700}
-  .cbbtns button.pri{background:linear-gradient(135deg,#4d8cff,#b57bff);border-color:transparent}
+  .cbbtns button.pri{background:linear-gradient(135deg,#e03131,#ff922b);border-color:transparent;color:#fff}
   .cbbtns button:hover{filter:brightness(1.15)}
-  .syncbadge{position:fixed;bottom:16px;right:16px;background:var(--card2);border:1px solid #34395c;
+  .syncbadge{position:fixed;bottom:16px;right:16px;background:#22252e;border:1px solid #34395c;color:#fff;
              padding:8px 14px;border-radius:10px;font-size:12px;color:var(--text);opacity:0;transition:.3s;
              pointer-events:none;z-index:99;box-shadow:0 6px 20px rgba(0,0,0,.4)}
   .syncbadge.show{opacity:1}
@@ -143,18 +145,18 @@
   /* edit modal */
   .modal{position:fixed;inset:0;background:rgba(5,7,15,.7);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
   .modal.show{display:flex}
-  .mbox{background:var(--card);border:1px solid #34395c;border-radius:16px;padding:22px;width:320px;max-width:100%}
+  .mbox{background:var(--card);border:1px solid #e0dad2;border-radius:16px;padding:22px;width:320px;max-width:100%}
   .mbox h3{font-size:15px;margin-bottom:4px}
   .mbox .msub{font-size:12px;color:var(--muted);margin-bottom:14px}
   .mbox label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
-  .mbox input{width:100%;background:var(--card2);border:1px solid #34395c;color:var(--text);
+  .mbox input{width:100%;background:var(--card2);border:1px solid #e0dad2;color:var(--text);
               padding:9px 12px;border-radius:9px;font-size:14px;outline:none}
   .mbox input:focus{border-color:var(--mpace)}
   .mbtns{display:flex;gap:8px;margin-top:16px}
   .mbtns button{flex:1;padding:9px;border-radius:9px;border:none;font-size:13px;font-weight:700;cursor:pointer}
-  .mbtns .ok{background:linear-gradient(135deg,#4d8cff,#b57bff);color:#fff}
-  .mbtns .cc{background:var(--card2);color:var(--muted)}
-  .resetbtn{cursor:pointer;background:transparent;border:1px solid #34395c;color:var(--muted);
+  .mbtns .ok{background:linear-gradient(135deg,#e03131,#ff922b);color:#fff}
+  .mbtns .cc{background:var(--card2);color:var(--muted);border:1px solid #e0dad2}
+  .resetbtn{cursor:pointer;background:transparent;border:1px solid #e0dad2;color:var(--muted);
             padding:6px 12px;border-radius:9px;font-size:11.5px;margin-left:6px}
   @media print{
     body{background:#fff;color:#111;padding:8px}
@@ -175,7 +177,7 @@
   /* ===== 響應式佈局容器 ===== */
   .topgrid{display:flex;flex-direction:column;gap:12px}
   .topright{order:-1} /* 手機：趨勢圖在上面 */
-  .ovmonth{margin-top:10px;font-size:11.5px;color:var(--muted);line-height:1.8;border-top:1px solid #2a2f4e;padding-top:8px}
+  .ovmonth{margin-top:10px;font-size:11.5px;color:var(--muted);line-height:1.8;border-top:1px solid #e9e4de;padding-top:8px}
   .ovmonth b{color:var(--text)}
 
   /* ===== 16:9 桌面版（≥1200px）===== */
@@ -203,9 +205,9 @@
 </head>
 <body>
 <div class="wrap">
-  <span class="goal">🎯 2027 大阪馬拉松 · Sub-4:15（6:00–6:02/km）</span>
-  <h1>🏃 馬拉松訓練儀表板 · 第 4 – 21 週</h1>
-  <div class="sub">2025/10/26 – 2026/2/28 · 拖動卡片可改期 · 打卡後自動更新本週完成統計（資料存於本機瀏覽器）</div>
+  <span class="goal">🎯 2027 大阪馬拉松 Sub-4:15 · 2026 名古屋半馬 PR</span>
+  <h1>🏃 馬拉松訓練儀表板 · 第 4 – 23 週</h1>
+  <div class="sub">2025/10/26 – 2026/3/14 · 大阪全馬（2/28）→ 名古屋半馬（3/14）· 拖動卡片可改期 · 打卡後自動更新統計</div>
 
   <div class="tabs" id="tabs"></div>
 
@@ -285,9 +287,9 @@ const W=[
 {w:4,d:"10/26 – 11/1",t:"第 4 週：4 跑升級 & 基礎打底週",h:3.2,
  focus:["<b>正式升級一週 4 跑</b>：本週起全面啟用「1 速度 + 1 節奏/輕鬆 + 1 速度 + 1 LSD」的高強度節奏","<b>速度課 780m×4 趟</b>：目標 5:40–5:50/km，重質不重量，趟間休息 90–120 秒","<b>重訓全面展開</b>：Marathon A / B 兩套 + 12kg 壺鈴農夫行走與 B-Stance RDL"],
  advice:["本週重點是「適應新負荷」而非拚表現，若疲勞累積寧可先砍輕鬆跑","輕鬆跑嚴格壓在 7:15–7:30/km，步頻 170+ spm 優先於速度","每晚滾筒 10 分鐘，特別留意小腿與髖部緊繃，本週起建立規律拉筋"]},
-{w:5,d:"11/2 – 11/8",t:"第 5 週：佛你跑 8km 賽事減量週",race:"🏆 比賽週",h:2.3,
- focus:["<b>西湖跑 10km</b>：週二輕鬆跑 10km @ 7:00/km，拉一課較長的有氧基礎","<b>佛你跑 8km 山路賽移至週六</b>：穩健完賽，當作天然下肢爆發力與離心肌力訓練","<b>週日完全休息</b>：賽後整天恢復，重訓降至 70%"],
- advice:["山路賽切忌開頭衝，上坡縮步幅、下坡放開步頻","西湖跑嚴格保持 7:00/km，感覺輕鬆也不要提速變成節奏跑","賽後立即補蛋白 + 碳水，週日全休為下週排酸與出國做準備"]},
+{w:5,d:"11/2 – 11/8",t:"第 5 週：佛你跑 8km 山路賽週 × 杭州出差",race:"🏆 比賽週",h:2.6,
+ focus:["<b>週二杭州出差</b>：西湖 10km 輕鬆巡航（7:00–7:15/km），兼作本週 LSD","<b>速度課不減量</b>：780m×4–5 趟 @ 5:40–5:50/km，維持神經刺激","<b>週六佛你跑 8km 山路賽</b>：穩健發揮，天然下肢爆發力訓練；週日徹底排酸全休"],
+ advice:["出差跑選平路繞湖，行李帶跑鞋即可，時間不夠跑 8km 也算完成","週四速度課在外地或返港後執行皆可，趟數按體感取 4 或 5 趟","週日全休不要補跑，下週（W6）要接回 4 跑節奏"]},
 {w:6,d:"11/9 – 11/15",t:"第 6 週：賽後排酸與義大利出國準備週",h:1.2,
  focus:["<b>賽後排酸</b>：週一 35 分鐘極慢跑促進血液循環","<b>重訓雙課回歸</b>：週二 Marathon A、週四 Marathon B 恢復常態重量","<b>配速訓練</b>：週三 1km 熱身 + M-Pace 5km @ 6:00/km，出國前先適應目標配速"],
  advice:["M-Pace 5km 若感吃力可先拆 2×2.5km，重點是建立配速感而非成績","排酸跑慢於 7:30/km，目的只是恢復，不是訓練","週五收拾行李後出發義大利，旅途步行量已很足夠，不必額外跑步"]},
@@ -309,9 +311,9 @@ const W=[
 {w:12,d:"12/21 – 12/27",t:"第 12 週：大埔半馬 21km 長課實測週",race:"🏆 比賽週",h:3.4,
  focus:["<b>半馬 = 長課實測</b>：前 14km 7:15/km，最後 7km 加速至 6:15–6:30/km","<b>補給實測</b>：每 45 分鐘一包能量膠，測試腸胃反應","<b>賽後恢復</b>：週一全休 + 滾筒、補充電解質與蛋白"],
  advice:["這是 1 月 25km 峰值課的預演，嚴格按分段配速執行","記錄能量膠時間點與體感，建立個人補給時間表","尾段加速保持步頻，不要突然拉大步幅以免抽筋"]},
-{w:13,d:"12/28 – 1/3",t:"第 13 週：郵輪度假與沖繩行程週",holiday:"🚢 度假週",h:0.5,
- focus:["<b>超補償週</b>：完全休息讓身體吸收前 12 週訓練成果","<b>輕度活動</b>：船上 / 岸上散步、徒手伸展","<b>心態充電</b>：享受假期，為 Peak 2 儲備動力"],
- advice:["週一先處理半馬賽後肌肉修復與行李打包","上岸觀光步行量已足夠，不必強迫跑步","假期尾聲早點調回作息，W14 強度直接拉滿"]},
+{w:13,d:"12/28 – 1/3",t:"第 13 週：郵輪度假與沖繩行程週",holiday:"🚢 度假週",h:1.7,
+ focus:["<b>超補償為主</b>：大部分時間完全休息，讓身體吸收前 12 週訓練成果","<b>海上日 2 課</b>：12/30 郵輪健身房 Marathon A 輕量版 + 甲板輕鬆跑；1/2 甲板 M-Pace 喚醒跑","<b>沖繩落地（12/31–1/1）</b>：純陸地觀光散步，不排高強度跑"],
+ advice:["週一先處理半馬賽後肌肉修復與行李打包","12/30 與 1/2 兩課都在海上日，時間安排最自由，其餘日子純放鬆","沖繩觀光步行量已足夠，不必額外跑步；假期尾聲早點調回作息，W14 強度直接拉滿"]},
 {w:14,d:"1/4 – 1/10",t:"第 14 週：Peak 2 · 4 跑全速開啟週",h:4.8,
  focus:["<b>全面重啟加碼</b>：780m 間歇升至 6 趟、M-Pace 升至 7km","<b>LSD 進階 18km</b>：前 12km 7:15/km，最後 6km 加至 6:30/km","<b>重訓回滿</b>：恢復常態重量，重建神經肌肉連結"],
  advice:["假期後首週強度高，若疲勞累積先砍重訓重量而非跑步","18km 尾段提速是本週最關鍵的一課，前 12km 忍住慢下來","每天記錄晨間靜止心跳，監控疲勞累積"]},
@@ -327,32 +329,38 @@ const W=[
 {w:18,d:"2/1 – 2/7",t:"第 18 週：賽前三週 Taper 鎖定週",h:3.2,
  focus:["<b>Taper 開始</b>：跑量降到約 28km，重訓減至 60%","<b>保持配速感</b>：M-Pace 6km 巡航 + 780m×4 趟維持神經記憶","<b>鎖定狀態</b>：睡眠、補給、裝備全部按比賽日標準執行"],
  advice:["Taper 期體感變好是正常的新鮮感，不要偷跑加量","按 W12 / W16 實測結果準備比賽日的能量膠與裝備","長課控制在 12km 以內，配速約 7:00/km 即可"]},
-{w:19,d:"2/8 – 2/14",t:"第 19 週：札幌雪地之旅 & 賽前兩週減量週",holiday:"❄️ 旅遊週",h:0.6,
+{w:19,d:"2/8 – 2/14",t:"第 19 週：札幌雪地之旅 & 賽前兩週減量週",holiday:"❄️ Taper 賽前減量週",h:0.6,
  focus:["<b>健身房維持</b>：徒手 / 輕重量保養一次即可","<b>賽前兩週減量</b>：本週只安排一次 35 分鐘輕鬆跑","<b>札幌雪地之旅</b>：完全不跑高強度，飯店內伸展與散步"],
  advice:["雪地濕滑，切勿冒險跑步，避免賽前受傷","讓肌肉與神經系統吸收超補償，是備賽的一部分","保持作息與補水，避免旅途疲勞影響下週喚醒跑"]},
-{w:20,d:"2/15 – 2/21",t:"第 20 週：返港神經喚醒與最終 Taper 週",h:1.0,
- focus:["<b>神經喚醒跑</b>：慢跑 25 分鐘 + 4 次 50m 輕快加速跑，找回腳感","<b>賽前最後短長課</b>：45 分鐘 / 6km 極慢速巡航，心率低位","<b>以休息為主</b>：其餘日子完全休息、調整作息與補水"],
+{w:20,d:"2/15 – 2/21",t:"第 20 週：返港神經喚醒與最終 Taper 週",holiday:"❄️ Taper 賽前減量週",h:1.0,
+ focus:["<b>札幌雪地之旅至 2/17 晚間返港</b>：飯店內伸展、散步","<b>神經喚醒跑</b>：慢跑 25 分鐘 + 4 次 50m 輕快加速跑，找回腳感","<b>賽前最後短長課</b>：45 分鐘 / 6km 極慢速巡航，心率低位"],
  advice:["喚醒跑重點是腳感不是疲勞，加速跑後即收","Taper 期體感變好正常，嚴禁臨時加量","本週開始整理大阪裝備清單與賽事資料"]},
 {w:21,d:"2/22 – 2/28",t:"第 21 週：🏆 2027 大阪馬拉松決戰週！",race:"🏆 決戰週",h:5.8,
  focus:["<b>大阪馬拉松決戰日（2/28）</b>：目標配速 <b>6:00–6:02/km</b>","<b>前 30km 穩如磐石</b>：靠配速紀律守住，不因體感好而加速","<b>30km 後靠下肢肌力</b>：穩住步頻，邁向 Sub-4:15 完賽"],
- advice:["EXPO 領物後不要久站，回飯店抬高雙腿休息","週五賽前定型跑喚醒身體即可，不要多做","週六裝備檢查、高碳水晚餐、早睡，比賽日全程按補給時間表執行"]}
+ advice:["EXPO 領物後不要久站，回飯店抬高雙腿休息","週五賽前定型跑喚醒身體即可，不要多做","週六裝備檢查、高碳水晚餐、早睡，比賽日全程按補給時間表執行"]},
+{w:22,d:"3/1 – 3/7",t:"第 22 週：大阪全馬賽後深層排酸與修復週",holiday:"🩹 賽後修復週",h:1.7,
+ focus:["<b>7 天徹底排酸</b>：全馬後下肢肌纖維離心損傷顯著，週一、二、四、日完全休息","<b>活血不練量</b>：週三 25 分鐘極慢跑（8:00/km）或游泳 30 分鐘","<b>輕量喚醒</b>：週五 Marathon B 輕重量、週六 45 分鐘恢復短長課"],
+ advice:["賽後前 3 天只求走路舒服，不要急著「測腳」","補充蛋白質與睡眠是這週的主課表，每日 ≥8 小時","週五輕重量只做 Leg Press 50% 與 Hip Abductor，喚醒臀肌即可，不要加重量"]},
+{w:23,d:"3/8 – 3/14",t:"第 23 週：🏆 名古屋半馬賽前喚醒與決戰週",race:"🏆 決戰週",h:2.6,
+ focus:["<b>Nagoya City Half Marathon（3/14）</b>：目標配速 <b>5:45–5:55/km</b>，衝 Personal Record","<b>配速喚醒</b>：週二 1km 熱身 + 5:50–6:00/km 巡航 4km + 冷身 1km","<b>全靠大阪底子</b>：42km 耐力已建立，這場放開來跑"],
+ advice:["半馬配速可以比全馬目標快 10–15 秒/km，但要靠前 5km 克制","週四神經活化跑只做 4 次 50m 加速，不要變成間歇課","週六到名古屋先領選手包，之後商圈輕鬆散步即可，避免久站"]}
 ];
 
 const D=[
-[["gym","🏋️ 健身房 Marathon A","Lat Pulldown 50kg / Leg Press 60kg / Seated Row 42.5kg<br><b>12kg 壺鈴單臂架胸農夫行走 3 組</b>（左右各 30 秒）",0],
+[["gym","🏋️ 健身房 Marathon A","Leg Press 60kg / Lat Pulldown 50kg / Seated Row 42.5kg<br><b>12kg 壺鈴單臂架胸農夫行走（Rack Carry）3 組</b>（左右各 30 秒，專注對側後腰拉扯感）",0],
  ["easy","🔥 輕鬆跑 + 居家 Combo","輕鬆跑 45 分鐘（7:15–7:30/km，步頻 170+ spm）<br>跑後居家 Combo 10 分鐘（Swing×3 + Thruster×3）",6.2],
  ["rest","😴 完全休息日","靜態伸展",0],
- ["speed","⚡ 公園 260m 速度課","熱身 1.3km → <b>780m×4 趟</b>（5:40–5:50/km，趟間 90–120s，順逆交替）→ 冷身 0.5km",4.9],
- ["gym","🏋️ 健身房 Marathon B","Dumbbell RDL 40kg / Overhead Press 24kg / Hip Abductor 61kg<br><b>12kg 壺鈴 B-Stance RDL 3 組</b>",0],
+ ["speed","⚡ 公園 260m 速度課","熱身 1.3km → <b>780m×4 趟</b>（5:40–5:50/km，趟間 90–120s）→ 冷身 0.5km",4.9],
+ ["gym","🏋️ 健身房 Marathon B","Dumbbell RDL 40kg / Hip Abductor 61kg<br><b>12kg 壺鈴 B-Stance RDL 3 組</b>",0],
  ["lsd","🫀 週末 LSD","80 分鐘 或 11km（平路極慢巡航）",11],
  ["easy","🧘 輕鬆排酸跑","35 分鐘（7:30–7:45/km 極慢跑，促進循環）",4.6]],
-[["gym","🏋️ Marathon A 減量版","重量 70% + <b>12kg 壺鈴農夫行走 2 組</b>",0],
- ["easy","🧘 西湖跑 10km","輕鬆跑 10km（<b>配速 7:00/km</b>，專注有氧基礎）",10],
- ["rest","😴 完全休息日","",0],
- ["speed","⚡ 速度課減量","熱身 1.3km + <b>520m×3 趟</b>（順暢配速即可）",2.9],
- ["rest","😴 完全休息日","",0],
- ["race","🏆 NRNG 佛你跑 8km 山路賽","穩健完賽 · 當作天然下肢爆發力訓練",8],
- ["rest","😴 完全休息日","賽後全日恢復 · 排酸伸展",0]],
+[["gym","🏋️ 健身房 Marathon A","Leg Press 60kg / Lat Pulldown 50kg<br><b>12kg 壺鈴單臂架胸農夫行走（Rack Carry）3 組</b>（左右各 30 秒）",0],
+ ["lsd","🔥 西湖 10km LSD","<b>11/3 杭州出差</b> · 7:00–7:15/km 輕鬆巡航跑一圈",10],
+ ["rest","😴 完全休息日","出差行程休息、拉筋",0],
+ ["speed","⚡ 公園 260m 速度課","熱身 1.3km → <b>780m×4–5 趟</b>（5:40–5:50/km，趟間 90–120s）→ 冷身 0.5km",5.3],
+ ["gym","🏋️ 健身房 Marathon B","Dumbbell RDL 40kg / Hip Abductor 61kg<br><b>12kg 壺鈴 B-Stance RDL 3 組</b>",0],
+ ["race","🏆 NRNG 佛你跑 8km 山路賽","穩健發揮 · 當作天然下肢肌爆發力訓練",8],
+ ["rest","🧘 完全休息日","徹底排酸修復 · 享受週末休閒",0]],
 [["easy","🧘 排酸慢跑","35 分鐘極慢跑（7:30+/km，促進恢復）",4.8],
  ["gym","🏋️ 健身房 Marathon A","恢復常態重量<br><b>12kg 壺鈴農夫行走 3 組</b>",0],
  ["mpace","🔥 配速訓練","熱身 1km → <b>M-Pace 5km @ 6:00/km</b> → 冷身",7],
@@ -394,21 +402,21 @@ const D=[
  ["speed","⚡ 賽前活化速度課","熱身 1.3km + <b>780m×3 趟</b>",3.6],
  ["rest","😴 完全休息日","",0],
  ["rest","😴 完全休息日","檢查神燈跑頭燈裝備",0],
- ["race","🏆 神燈跑 11km","下午 5:00 起跑 · <b>含 418m 爬升</b>",11]],
+ ["race","🏆 神燈跑 11km","<b>12/20（週日）下午 5:00 起跑</b> · 含 418m 爬升<br>⚠️ <b>強制頭燈/電筒裝備</b>，備用電池必帶",11]],
 [["rest","😴 完全休息日","賽後滾筒放鬆、補充電解質與蛋白",0],
  ["easy","🧘 排酸輕鬆跑","30 分鐘",4.1],
  ["gym","🏋️ Marathon A 減量版","重量 70%",0],
  ["easy","🧘 輕鬆跑","40 分鐘（7:15–7:30/km）",5.5],
  ["rest","🎄 完全休息日","聖誕大餐補滿碳水",0],
  ["rest","😴 完全休息日","",0],
- ["race","🏆 大埔半馬 21km","7:30 起跑 · 前 14km 7:15/km → 最後 7km <b>6:15–6:30/km</b> · 每 45 分鐘能量膠",21]],
-[["rest","😴 完全休息日","半馬賽後肌肉修復與行李打包",0],
- ["travel","🚢 登郵輪","船上輕度散步、徒手伸展",0],
- ["travel","🚢 郵輪日","輕度散步放鬆",0],
- ["travel","🚢 郵輪日","輕度散步放鬆",0],
- ["travel","✈️ 落地沖繩","岸上輕度散步",0],
- ["travel","✈️ 沖繩","岸上輕度散步",0],
- ["travel","🚢 返程","不做高強度跑步",0]],
+ ["race","🏆 大埔半馬 21km","<b>12/27（週日）早上 7:30 起跑</b> · 作長課 LSD 代用<br>前 14km 7:15/km → 最後 7km <b>6:15–6:30/km</b><br>⏱ 每 45 分鐘吞一包能量膠（補給實測）",21]],
+[["rest","😴 完全休息日","大埔半馬賽後肌肉修復與行李打包",0],
+ ["travel","🚢 登郵輪（第 1 天）","12/29 登船 · 船上輕度散步、徒手伸展",0],
+ ["gym","🏋️ 郵輪健身房 Marathon A 輕量版 + 甲板輕鬆跑","<b>12/30（第 2 天 · 海上日）</b><br>船上健身房：Leg Press 輕量 / 上背拉曳<br>甲板跑道或跑步機 <b>30 分鐘 E-Pace 輕鬆跑</b>，活化下肢",4.3],
+ ["travel","🌺 沖繩落地觀光（第 3 天）","12/31 落地沖繩 · 陸地觀光散步，不排高強度跑",0],
+ ["travel","🌺 沖繩落地觀光（第 4 天）","1/1 岸上散步觀光，純恢復",0],
+ ["mpace","🏃‍♂️ 郵輪甲板 M-Pace 喚醒跑","<b>1/2（第 5 天 · 海上日）</b><br>跑步機或甲板跑道 35 分鐘（含 <b>15 分鐘 6:00/km M-Pace 巡航</b>），找回比賽配速腳感",6.0],
+ ["travel","🚢 返程","1/3 下船返港 · 不做高強度跑步",0]],
 [["gym","🏋️ 健身房 Marathon A","全面恢復常態重量<br><b>12kg 壺鈴農夫行走 3 組</b>",0],
  ["mpace","🔥 M-Pace 節奏跑","熱身 1km → <b>6:00/km 配速跑 7km</b> → 冷身 1km",9],
  ["rest","😴 完全休息日","",0],
@@ -464,7 +472,21 @@ const D=[
  ["easy","🚶 EXPO 領物 / 散步","30 分鐘輕鬆散步",3],
  ["easy","⚡ 賽前定型跑","慢跑 15 分鐘 + <b>3 次 50m 輕快加速跑</b>",2],
  ["rest","😴 完全休息","裝備檢查、晚餐高碳水、早睡",0],
- ["race","🏆 2027 大阪馬拉松決戰日","目標配速 <b>6:00–6:02/km</b> · 前 30km 穩如磐石，30km 後靠肌力衝 <b>Sub-4:15</b>",42.2]]
+ ["race","🏆 2027 大阪馬拉松決戰日","目標配速 <b>6:00–6:02/km</b> · 前 30km 穩如磐石，30km 後靠肌力衝 <b>Sub-4:15</b>",42.2]],
+[["rest","😴 完全休息日","大阪賽後修復 · 滾筒放鬆、補充蛋白質",0],
+ ["rest","🚶 完全休息日","散步 30 分鐘（幫助下肢血液循環排酸）",0],
+ ["easy","🏊 活性慢跑 / 慢游","25 分鐘極慢輕鬆跑（8:00/km）或游泳 30 分鐘",3.3],
+ ["rest","😴 完全休息日","房內下肢拉筋與深層睡眠",0],
+ ["gym","🏋️ 健身房恢復課","輕重量 Marathon B（Leg Press 50% / Hip Abductor 輕量，喚醒臀肌）",0],
+ ["easy","🫀 賽後恢復短長課","輕鬆跑 45 分鐘（約 6km，7:15–7:30/km）",6],
+ ["rest","😴 完全休息日","",0]],
+[["rest","😴 完全休息日","",0],
+ ["race","🔥 半馬目標配速喚醒跑","熱身 1km → <b>5:50–6:00/km 巡航 4km</b> → 冷身 1km",6],
+ ["rest","😴 完全休息日","",0],
+ ["easy","⚡ 神經活化跑","慢跑 20 分鐘 + <b>4 次 50m 輕快加速跑</b>",3.2],
+ ["rest","😴 完全休息日","抵達名古屋 / 早睡",0],
+ ["travel","🎽 賽前定型","抵達名古屋立即拿選手包，商圈輕鬆散步 / 晚餐高碳水補給",0],
+ ["race","🏆 Nagoya City Half Marathon 名古屋半馬決戰日","目標配速 <b>5:45–5:55/km</b><br>靠大阪 42km 底子放開來跑，輕鬆推進 Personal Record",21.1]]
 ];
 
 const CLS={gym:"c-gym t-gym",mpace:"c-mpace t-mpace",speed:"c-speed t-speed",lsd:"c-lsd t-lsd",
@@ -472,14 +494,19 @@ const CLS={gym:"c-gym t-gym",mpace:"c-mpace t-mpace",speed:"c-speed t-speed",lsd
 const TN={gym:"重訓",mpace:"M-Pace",speed:"速度",lsd:"LSD",easy:"輕鬆跑",rest:"休息",race:"比賽/關鍵課",travel:"旅遊/休假"};
 const DOW=["週一","週二","週三","週四","週五","週六","週日"];
 const KEY="osaka_plan_v1";
-let S=JSON.parse(localStorage.getItem(KEY)||'null')||{done:{},order:{},stretch:{},milk:{},mods:{}};
-if(!S.mods)S.mods={};
+const SHEET_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQSMazAaVWI2z4WCT5aR6IS7bejQTLFynUxWm49W9AJB9wYV94fXSb4FRS4aXw4Ht8TuryqTHDcRzdv/pub?gid=194778557&single=true&output=csv";
+let S=JSON.parse(localStorage.getItem(KEY)||'null')||{done:{},order:{},stretch:{},milk:{},mods:{},combo:{}};
+if(!S.mods)S.mods={};if(!S.combo)S.combo={};
 const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
 W.forEach((w,i)=>{w.days=D[i]; if(!S.order[w.w]) S.order[w.w]=[0,1,2,3,4,5,6];});
 
 let cur=0, dragFrom=null;
 const tabsEl=document.getElementById("tabs");
-W.forEach((w,i)=>{const t=document.createElement("div");t.className="tab";t.textContent="W"+w.w;t.onclick=()=>show(i);tabsEl.appendChild(t)});
+function buildTabs(){
+  tabsEl.innerHTML="";
+  W.forEach((w,i)=>{const t=document.createElement("div");t.className="tab";t.textContent="W"+w.w;t.onclick=()=>show(i);tabsEl.appendChild(t)});
+}
+buildTabs();
 
 const order=w=>S.order[w]||[0,1,2,3,4,5,6];
 
@@ -526,7 +553,7 @@ function renderBars(){
   W.forEach((w,i)=>{
     const tot=weekKm(i);
     const col=document.createElement("div");col.className="bcol";
-    col.innerHTML=`<span class="bv">${Math.round(tot)}</span><div class="bar" style="height:${Math.max(5,tot/48*100)}%"></div><span class="bl">W${w.w}</span>`;
+    col.innerHTML=`<span class="bv">${Math.round(tot)}</span><div class="bar" style="height:${Math.max(5,tot/52*100)}%"></div><span class="bl">W${w.w}</span>`;
     col.onclick=()=>show(i);barsEl.appendChild(col);
   });
   document.querySelectorAll(".bcol").forEach((b,j)=>b.classList.toggle("active",j===cur));
@@ -562,15 +589,23 @@ function renderGrid(){
     card.className="card "+CLS[type].split(" ")[0]+(S.done[w.w+"_"+di]?" done":"");
     card.draggable=true;card.dataset.di=di;
     const isRun=RUN_TYPES.includes(type);
+    let det=detail||"—";
+    if(type==="speed")det+="\n<span class=\'tip\'>🌀 公園 260m 跑道：順逆時針交替 · 過彎前 5 米主動縮步幅、提步頻，保護膝蓋腳踝</span>";
+    if(type==="lsd"&&showKm>=15)det+="\n<span class=\'tip\'>🥤 補給：每 45 分鐘吞一包能量膠 + 補充 250ml 水/電解質</span>";
+    const hasCombo=type==="easy"&&/Combo/.test(detail);
+    const ck=w.w+"_"+di;
     card.innerHTML=`<div class="hd"><span>${DOW[slot]}</span><span class="tag ${CLS[type].split(" ")[1]}">${TN[type]}</span></div>
-      <div class="nm">${name}</div><div class="dt">${detail||"—"}</div>
+      <div class="nm">${name}</div><div class="dt">${det}</div>
       ${showKm?`<div class="km">📏 約 ${showKm} km${mod?(mod.min?` · ⏱ ${mod.min} 分`:"")+" ✏️":`（計劃）`}</div>`:""}
       ${(type==="rest"||type==="travel")?"":`<button class="btn">${S.done[w.w+"_"+di]?"✓ 已完成（點擊取消）":"標記完成"}</button>`}
-      ${isRun?`<button class="btn editbtn">✏️ 修改距離/時間</button>`:""}`;
+      ${isRun?`<button class="btn editbtn">✏️ 修改距離/時間</button>`:""}
+      ${hasCombo?`<button class="btn combobtn${S.combo[ck]?" on":""}">📺 跑後電視 Combo 10 分鐘 ${S.combo[ck]?"✓":""}</button>`:""}`;
     const btn=card.querySelector(".btn");
     if(btn)btn.onclick=()=>{const k=w.w+"_"+di;S.done[k]=!S.done[k];if(!S.done[k])delete S.done[k];save();renderGrid();updateStats();markTabs();cloudPush();};
     const ebtn=card.querySelector(".editbtn");
     if(ebtn)ebtn.onclick=e=>{e.stopPropagation();openEdit(w,di);};
+    const cbtn=card.querySelector(".combobtn");
+    if(cbtn)cbtn.onclick=()=>{const k=w.w+"_"+di;S.combo[k]=!S.combo[k];if(!S.combo[k])delete S.combo[k];save();renderGrid();cloudPush();};
 
     card.addEventListener("dragstart",e=>{dragFrom=slot;card.classList.add("drag");e.dataTransfer.effectAllowed="move";});
     card.addEventListener("dragend",()=>{card.classList.remove("drag");document.querySelectorAll(".slot").forEach(s=>s.classList.remove("over"));});
@@ -667,7 +702,7 @@ function markTabs(){
 }
 document.getElementById("prev").onclick=()=>show(Math.max(0,cur-1));
 document.getElementById("next").onclick=()=>show(Math.min(W.length-1,cur+1));
-document.getElementById("resetBtn").onclick=()=>{if(confirm("確定清除所有完成/拖動/恢復/修改紀錄？此操作會同步清除雲端資料。")){S={done:{},order:{},stretch:{},milk:{},mods:{}};W.forEach(w=>S.order[w.w]=[0,1,2,3,4,5,6]);save();show(cur);markTabs();cloudPush();}};
+document.getElementById("resetBtn").onclick=()=>{if(confirm("確定清除所有完成/拖動/恢復/修改紀錄？此操作會同步清除雲端資料。")){S={done:{},order:{},stretch:{},milk:{},mods:{},combo:{}};W.forEach(w=>S.order[w.w]=[0,1,2,3,4,5,6]);save();show(cur);markTabs();cloudPush();}};
 // 📥 匯出 JSON 備份
 document.getElementById("exportBtn").onclick=()=>{
   const dataStr="data:application/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(S,null,2));
@@ -687,8 +722,8 @@ importFileInput.onchange=e=>{
     try{
       const imported=JSON.parse(ev.target.result);
       if(imported&&typeof imported==="object"&&(imported.done||imported.order||imported.stretch||imported.milk)){
-        S=Object.assign({done:{},order:{},stretch:{},milk:{},mods:{}},imported);
-        if(!S.mods)S.mods={};
+        S=Object.assign({done:{},order:{},stretch:{},milk:{},mods:{},combo:{}},imported);
+        if(!S.mods)S.mods={};if(!S.combo)S.combo={};
         W.forEach(w=>{if(!S.order[w.w])S.order[w.w]=[0,1,2,3,4,5,6];});
         save();show(cur);markTabs();
         alert("✅ 備份資料已成功匯入還原！");
@@ -878,7 +913,77 @@ function startRealtime(){
 
 function escapeHtml(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 
-show(0);markTabs();renderCloudUI();initFirebase();
+// ===== 📄 Google Sheet 課表自動讀取 =====
+const TYPE_MAP={"重訓":"gym","M-Pace":"mpace","速度課":"speed","LSD長課":"lsd","LSD 長課":"lsd","輕鬆跑":"easy","比賽/關鍵課":"race","比賽":"race","旅遊/休假":"travel","休息":"rest"};
+const DOW_MAP={"週一":0,"週二":1,"週三":2,"週四":3,"週五":4,"週六":5,"週日":6,"一":0,"二":1,"三":2,"四":3,"五":4,"六":5,"日":6};
+function parseCSV(text){
+  const rows=[];let row=[],cell="",inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(inQ){
+      if(c==='"'){if(text[i+1]==='"'){cell+='"';i++;}else inQ=false;}
+      else cell+=c;
+    }else{
+      if(c==='"')inQ=true;
+      else if(c===","){row.push(cell);cell="";}
+      else if(c==="\n"){row.push(cell);rows.push(row);row=[];cell="";}
+      else if(c!=="\r")cell+=c;
+    }
+  }
+  if(cell!==""||row.length){row.push(cell);rows.push(row);}
+  return rows.filter(r=>r.some(x=>String(x).trim()!==""));
+}
+function buildFromRows(rows){
+  let hdr=rows.findIndex(r=>r[0]&&r[0].trim()==="週次");
+  if(hdr<0)return null;
+  const head=rows[hdr].map(x=>x.trim());
+  const col=n=>head.indexOf(n);
+  const cW=col("週次"),cD=col("週日期區間"),cT=col("週主題"),cDow=col("星期"),cType=col("課程類型"),cName=col("課程名稱"),cDet=col("詳細內容"),cKm=col("計劃距離km");
+  if(cW<0||cType<0||cName<0)return null;
+  const META={};W.forEach(w=>META[w.w]=w);
+  const weeks={};let order=[];
+  rows.slice(hdr+1).forEach(r=>{
+    const wm=String(r[cW]||"").trim().match(/W?(\d+)/i);if(!wm)return;
+    const wn=+wm[1];
+    if(!weeks[wn]){weeks[wn]={w:wn,d:r[cD]||"",t:r[cT]||"",days:{}};order.push(wn);}
+    const dow=DOW_MAP[String(r[cDow]||"").trim()];
+    if(dow===undefined)return;
+    if(weeks[wn].days[dow])return;
+    const tcode=TYPE_MAP[String(r[cType]||"").trim()]||"easy";
+    const km=parseFloat(String(r[cKm]||"").replace(/[^\d.]/g,""))||0;
+    weeks[wn].days[dow]=[tcode,String(r[cName]||"").trim(),String(r[cDet]||"").trim(),km];
+  });
+  return order.sort((a,b)=>a-b).map(wn=>{
+    const wk=weeks[wn],b=META[wn]||{};
+    const days=[];
+    for(let i=0;i<7;i++)days.push(wk.days[i]||["rest","😴 完全休息日","",0]);
+    const kmTot=days.reduce((a,d)=>a+d[3],0);
+    return {w:wn,d:wk.d,t:wk.t,
+      h:b.h||Math.max(0.5,Math.round(kmTot/9*10)/10),
+      focus:b.focus||["<b>此週重點未在 Sheet 定義</b>：可在「週主題」欄補充，或保留內建說明"],
+      advice:b.advice||["—"],
+      days};
+  });
+}
+async function loadSheet(){
+  try{
+    const res=await fetch(SHEET_URL,{cache:"no-store"});
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    const txt=await res.text();
+    const build=buildFromRows(parseCSV(txt));
+    if(!build||build.length<3)throw new Error("格式不符");
+    W.length=0;W.push(...build);
+    W.forEach(w=>{if(!S.order[w.w])S.order[w.w]=[0,1,2,3,4,5,6];});
+    buildTabs();
+    cur=Math.min(cur,W.length-1);
+    show(cur);markTabs();
+    cbState("on","📄 Google Sheet 課表已載入：W4 – W"+W[W.length-1].w+"（雲端課表模式）");
+  }catch(e){
+    console.warn("Sheet 載入失敗：",e);
+    cbState("off","☁️ 未同步（Sheet 讀取失敗，已使用內建課表）");
+  }
+}
+show(0);markTabs();renderCloudUI();initFirebase();loadSheet();
 </script>
 </body>
 </html>
