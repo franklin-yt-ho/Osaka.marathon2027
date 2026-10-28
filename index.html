@@ -516,7 +516,7 @@ const dayKm=(w,di)=>{const m=S.mods[w.w+"_"+di];return(m&&m.km)?m.km:w.days[di][
 const weekKm=wi=>W[wi].days.reduce((a,d,i)=>a+dayKm(W[wi],i),0);
 const MN=["","一月","二月","三月","四月","五月","六月","七月","八月","九月","十月","十一月","十二月"];
 function weekStart(w){const m=w.d.match(/^(\d+)\/(\d+)/);const mo=+m[1],dy=+m[2];return new Date(mo>=7?2025:2026,mo-1,dy);}
-function monthTotals(){const plan={},done={};W.forEach((ww,wi)=>{const s0=weekStart(ww);ww.days.forEach((d,di)=>{if(d[0]==="rest"||d[0]==="travel")return;const dt=new Date(s0);dt.setDate(dt.getDate()+di);const k=dt.getFullYear()+"-"+(dt.getMonth()+1);plan[k]=(plan[k]||0)+dayKm(ww,di);if(S.done[ww.w+"_"+di])done[k]=(done[k]||0)+dayKm(ww,di);});});return{plan,done};}
+function monthTotals(){const plan={},done={};W.forEach((ww,wi)=>{const s0=weekStart(ww);order(ww.w).forEach((di,slot)=>{const d=ww.days[di];if(d[0]==="rest"||d[0]==="travel")return;const dt=new Date(s0);dt.setDate(dt.getDate()+slot);const k=dt.getFullYear()+"-"+(dt.getMonth()+1);plan[k]=(plan[k]||0)+dayKm(ww,di);if(S.done[ww.w+"_"+di])done[k]=(done[k]||0)+dayKm(ww,di);});});return{plan,done};}
 
 // 修改彈窗
 const modal=document.createElement("div");modal.className="modal";
@@ -616,7 +616,7 @@ function renderGrid(){
       e.preventDefault();slotEl.classList.remove("over");
       if(dragFrom===null||dragFrom===slot)return;
       const o=order(w.w).slice();const tmp=o[dragFrom];o[dragFrom]=o[slot];o[slot]=tmp;
-      S.order[w.w]=o;save();renderGrid();cloudPush();
+      S.order[w.w]=o;save();renderGrid();updateStats();cloudPush();
     });
     slotEl.appendChild(card);g.appendChild(slotEl);
   });
@@ -939,13 +939,23 @@ function buildFromRows(rows){
   const head=rows[hdr].map(x=>x.trim());
   const col=n=>head.indexOf(n);
   const cW=col("週次"),cD=col("週日期區間"),cT=col("週主題"),cDow=col("星期"),cType=col("課程類型"),cName=col("課程名稱"),cDet=col("詳細內容"),cKm=col("計劃距離km");
+  const cF=col("週重點"),cA=col("教練建議");
+  const splitPts=v=>String(v||"").split(/\n|；|;/).map(s=>s.trim()).filter(Boolean);
   if(cW<0||cType<0||cName<0)return null;
   const META={};W.forEach(w=>META[w.w]=w);
   const weeks={};let order=[];
   rows.slice(hdr+1).forEach(r=>{
     const wm=String(r[cW]||"").trim().match(/W?(\d+)/i);if(!wm)return;
     const wn=+wm[1];
-    if(!weeks[wn]){weeks[wn]={w:wn,d:r[cD]||"",t:r[cT]||"",days:{}};order.push(wn);}
+    if(!weeks[wn]){
+      weeks[wn]={w:wn,d:r[cD]||"",t:r[cT]||"",days:{},
+        focus:cF>=0?splitPts(r[cF]):null,
+        advice:cA>=0?splitPts(r[cA]):null};
+      order.push(wn);
+    }else{
+      if(weeks[wn].focus===null&&cF>=0&&r[cF])weeks[wn].focus=splitPts(r[cF]);
+      if(weeks[wn].advice===null&&cA>=0&&r[cA])weeks[wn].advice=splitPts(r[cA]);
+    }
     const dow=DOW_MAP[String(r[cDow]||"").trim()];
     if(dow===undefined)return;
     if(weeks[wn].days[dow])return;
@@ -960,8 +970,8 @@ function buildFromRows(rows){
     const kmTot=days.reduce((a,d)=>a+d[3],0);
     return {w:wn,d:wk.d,t:wk.t,
       h:b.h||Math.max(0.5,Math.round(kmTot/9*10)/10),
-      focus:b.focus||["<b>此週重點未在 Sheet 定義</b>：可在「週主題」欄補充，或保留內建說明"],
-      advice:b.advice||["—"],
+      focus:wk.focus&&wk.focus.length?wk.focus:(b.focus||["<b>此週重點未在 Sheet 定義</b>：可在 Sheet 加「週重點」欄補充"]),
+      advice:wk.advice&&wk.advice.length?wk.advice:(b.advice||["—"]),
       days};
   });
 }
