@@ -500,7 +500,7 @@ const KEY="osaka_plan_v1";
 const SHEET_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQSMazAaVWI2z4WCT5aR6IS7bejQTLFynUxWm49W9AJB9wYV94fXSb4FRS4aXw4Ht8TuryqTHDcRzdv/pub?gid=194778557&single=true&output=csv";
 // ===== ☁️ Google Apps Script 紀錄同步（免 Firebase）=====
 // 部署方法見檔案底部註解；取得 Web App 網址後貼到下方
-const GAS_URL="https://script.google.com/macros/s/AKfycbxWjn4nyxKoxOdB73F6FExDbvAxQgIHpPdeekYD6g7Xw-8KOPAKF3HvaavDMGuiXG1S/exec";
+const GAS_URL="PASTE_GAS_WEBAPP_URL";
 const GAS_SECRET="osaka2027"; // 自訂暗號，與 Apps Script 內一致即可
 const gasOK=()=>!String(GAS_URL).startsWith("PASTE_");
 let S=JSON.parse(localStorage.getItem(KEY)||'null')||{done:{},order:{},stretch:{},milk:{},mods:{},combo:{}};
@@ -792,7 +792,11 @@ function renderCloudUI(){
   cbBtns.innerHTML="";
   if(gasOK()&&(!fbUser||!fbReady)){
     cbState("on","☁️ 紀錄同步：Google Sheet 模式（Apps Script）· 自動同步中");
-    cbBtns.appendChild(cbBtn("🔄 立即同步",null,async()=>{await gasPull(true);}));
+    cbBtns.appendChild(cbBtn("🔄 立即同步",null,async()=>{
+      cbDot.className="cbdot sync";
+      const ok=await gasPull(true);
+      if(!ok){gasPush(true);toast("⬆️ 已把本機紀錄推送到 Sheet");}
+    }));
     return;
   }
   if(!fbReady){
@@ -927,7 +931,10 @@ async function gasPull(silent){
   try{
     const res=await fetch(GAS_URL+"?t="+Date.now(),{cache:"no-store"});
     const j=await res.json();
-    if(!j.data)return false;
+    if(!j.data){
+      if(!silent)toast("📭 Sheet 尚無紀錄（完成一堂課後會自動寫入）");
+      return false;
+    }
     const rec=JSON.parse(j.data);
     const remoteTs=rec._ts||rec.updatedAt||0;
     const localTs=S._ts||0;
@@ -939,9 +946,18 @@ async function gasPull(silent){
       if(!silent)toast("☁️ 已從 Sheet 取得最新紀錄");
       return true;
     }
-    if(localTs>remoteTs){gasPush(true);}
+    if(localTs>remoteTs){
+      gasPush(true);
+      if(!silent)toast("⬆️ 本機紀錄較新，已推送到 Sheet");
+    }else if(!silent){
+      toast("✅ 雲端與本機紀錄一致");
+    }
     return true;
-  }catch(e){console.warn("GAS 讀取失敗",e);return false;}
+  }catch(e){
+    console.warn("GAS 讀取失敗",e);
+    if(!silent){toast("❌ 連線失敗："+e.message);cbDot.className="cbdot err";}
+    return false;
+  }
 }
 
 function startRealtime(){
