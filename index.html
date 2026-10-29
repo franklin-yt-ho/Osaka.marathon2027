@@ -500,7 +500,7 @@ const KEY="osaka_plan_v1";
 const SHEET_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQSMazAaVWI2z4WCT5aR6IS7bejQTLFynUxWm49W9AJB9wYV94fXSb4FRS4aXw4Ht8TuryqTHDcRzdv/pub?gid=194778557&single=true&output=csv";
 // ===== ☁️ Google Apps Script 紀錄同步（免 Firebase）=====
 // 部署方法見檔案底部註解；取得 Web App 網址後貼到下方
-const GAS_URL="PASTE_GAS_WEBAPP_URL";
+const GAS_URL="https://script.google.com/macros/s/AKfycbxWjn4nyxKoxOdB73F6FExDbvAxQgIHpPdeekYD6g7Xw-8KOPAKF3HvaavDMGuiXG1S/exec";
 const GAS_SECRET="osaka2027"; // 自訂暗號，與 Apps Script 內一致即可
 const gasOK=()=>!String(GAS_URL).startsWith("PASTE_");
 let S=JSON.parse(localStorage.getItem(KEY)||'null')||{done:{},order:{},stretch:{},milk:{},mods:{},combo:{}};
