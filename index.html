@@ -26,8 +26,8 @@
 
   .overview{background:var(--card);border-radius:16px;padding:16px}
   .overview h3{font-size:14px;margin-bottom:12px}
-  .bars{display:flex;align-items:flex-end;gap:5px;height:120px}
-  .bcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;height:100%;justify-content:flex-end}
+  .bars{display:flex;align-items:flex-end;gap:5px;height:120px;overflow-x:auto;scrollbar-width:thin;scrollbar-color:#c9c2b8 transparent;padding-bottom:4px}
+  .bcol{flex:1 0 30px;min-width:30px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;height:100%;justify-content:flex-end}
   .bcol .bar{width:100%;max-width:34px;border-radius:5px 5px 0 0;background:linear-gradient(180deg,#ff8787,#e03131);transition:.2s}
   .bcol:hover .bar{filter:brightness(1.35)}
   .bcol.active .bar{background:linear-gradient(180deg,#e03131,#a61e1e)}
@@ -172,6 +172,8 @@
     .grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
     h1{font-size:19px}
     .stats{grid-template-columns:repeat(2,1fr)}
+    .bcol{flex:0 0 26px;min-width:26px}
+    .bcol .bl{font-size:8.5px}
   }
 
   /* ===== 響應式佈局容器 ===== */
@@ -189,6 +191,7 @@
     .topgrid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px;align-items:start}
     .topright{order:0;position:sticky;top:16px}
     .overview .bars{height:170px}
+    .bcol{flex:0 0 36px;min-width:36px}
     .stats{grid-template-columns:repeat(4,1fr)}
     .stat{padding:16px 12px}
     .stat .v{font-size:24px}
@@ -495,6 +498,11 @@ const TN={gym:"重訓",mpace:"M-Pace",speed:"速度",lsd:"LSD",easy:"輕鬆跑",
 const DOW=["週一","週二","週三","週四","週五","週六","週日"];
 const KEY="osaka_plan_v1";
 const SHEET_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQSMazAaVWI2z4WCT5aR6IS7bejQTLFynUxWm49W9AJB9wYV94fXSb4FRS4aXw4Ht8TuryqTHDcRzdv/pub?gid=194778557&single=true&output=csv";
+// ===== ☁️ Google Apps Script 紀錄同步（免 Firebase）=====
+// 部署方法見檔案底部註解；取得 Web App 網址後貼到下方
+const GAS_URL="PASTE_GAS_WEBAPP_URL";
+const GAS_SECRET="osaka2027"; // 自訂暗號，與 Apps Script 內一致即可
+const gasOK=()=>!String(GAS_URL).startsWith("PASTE_");
 let S=JSON.parse(localStorage.getItem(KEY)||'null')||{done:{},order:{},stretch:{},milk:{},mods:{},combo:{}};
 if(!S.mods)S.mods={};if(!S.combo)S.combo={};
 const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
@@ -563,6 +571,8 @@ function show(i){
   cur=i;const w=W[i];
   document.querySelectorAll(".tab").forEach((t,j)=>t.classList.toggle("active",j===i));
   document.querySelectorAll(".bcol").forEach((b,j)=>b.classList.toggle("active",j===i));
+  const act=barsEl.querySelector(".bcol.active");
+  if(act)act.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"});
   document.getElementById("weekTitle").textContent=w.t;
   document.getElementById("weekDates").textContent="📅 "+w.d;
   const b=document.getElementById("weekBadge");
@@ -780,6 +790,11 @@ function cbBtn(label,cls,fn){const b=document.createElement("button");b.textCont
 
 function renderCloudUI(){
   cbBtns.innerHTML="";
+  if(gasOK()&&(!fbUser||!fbReady)){
+    cbState("on","☁️ 紀錄同步：Google Sheet 模式（Apps Script）· 自動同步中");
+    cbBtns.appendChild(cbBtn("🔄 立即同步",null,async()=>{await gasPull(true);}));
+    return;
+  }
   if(!fbReady){
     cbState("off","☁️ 雲端同步：未設定（尚在載入或需填入 Firebase 設定）");
     return;
@@ -796,7 +811,7 @@ function renderCloudUI(){
 
 async function initFirebase(){
   if(String(FIREBASE_CONFIG.apiKey).startsWith("PASTE_")){
-    cbState("off","☁️ 雲端同步未啟用（請在程式碼填入 Firebase 設定，見檔案內註解）");
+    if(!gasOK())cbState("off","☁️ 雲端同步未啟用（請在程式碼填入 Firebase 或 GAS 設定）");
     return;
   }
   try{
@@ -874,17 +889,59 @@ async function cloudPull(alertUser){
 }
 
 function cloudPush(immediate){
+  if(gasOK()&&(!fbUser||!fbReady)){gasPush(immediate);return;}
   if(!fbUser||!fbReady)return;
   clearTimeout(pushTimer);
   pushTimer=setTimeout(async()=>{
     try{
       cbDot.className="cbdot sync";
+      S._ts=Date.now();
       const payload=JSON.stringify({...S,_ts:Date.now()});
       await window.__fb.setDoc(docRef(),{payload,updatedAt:window.__fb.serverTimestamp(),email:fbUser.email||""},{merge:true});
       cbDot.className="cbdot on";
       toast("☁️ 已同步");
     }catch(e){console.error(e);cbState("err","同步失敗："+e.message);}
   },immediate?200:1200); // 防抖：連續點擊只推一次
+}
+
+// —— GAS 模式（免登入、免金鑰）——
+let gasTimer=null;
+function gasPush(immediate){
+  if(!gasOK())return;
+  clearTimeout(gasTimer);
+  gasTimer=setTimeout(async()=>{
+    try{
+      cbDot.className="cbdot sync";
+      S._ts=Date.now();save();
+      // no-cors：GAS 寫入端無 CORS 標頭，採 fire-and-forget
+      await fetch(GAS_URL,{method:"POST",mode:"no-cors",
+        headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body:JSON.stringify({secret:GAS_SECRET,payload:JSON.stringify(S),updatedAt:Date.now()})});
+      cbDot.className="cbdot on";
+      toast("☁️ 已同步到 Sheet");
+    }catch(e){console.error(e);cbDot.className="cbdot err";cbText.textContent="☁️ 同步失敗："+e.message;}
+  },immediate?300:1500);
+}
+async function gasPull(silent){
+  if(!gasOK())return false;
+  try{
+    const res=await fetch(GAS_URL+"?t="+Date.now(),{cache:"no-store"});
+    const j=await res.json();
+    if(!j.data)return false;
+    const rec=JSON.parse(j.data);
+    const remoteTs=rec._ts||rec.updatedAt||0;
+    const localTs=S._ts||0;
+    if(remoteTs>localTs){
+      S=Object.assign({done:{},order:{},stretch:{},milk:{},mods:{},combo:{},_ts:remoteTs},rec);
+      W.forEach(w=>{if(!S.order[w.w])S.order[w.w]=[0,1,2,3,4,5,6];});
+      if(!S.mods)S.mods={};if(!S.combo)S.combo={};
+      save();show(Math.min(cur,W.length-1));markTabs();
+      if(!silent)toast("☁️ 已從 Sheet 取得最新紀錄");
+      return true;
+    }
+    if(localTs>remoteTs){gasPush(true);}
+    return true;
+  }catch(e){console.warn("GAS 讀取失敗",e);return false;}
 }
 
 function startRealtime(){
@@ -994,6 +1051,7 @@ async function loadSheet(){
   }
 }
 show(0);markTabs();renderCloudUI();initFirebase();loadSheet();
+if(gasOK()&&String(FIREBASE_CONFIG.apiKey).startsWith("PASTE_"))gasPull(true);
 </script>
 </body>
 </html>
