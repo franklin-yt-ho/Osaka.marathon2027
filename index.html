@@ -798,6 +798,7 @@ function renderCloudUI(){
       if(!ok){gasPush(true);toast("⬆️ 已把本機紀錄推送到 Sheet");}
       else setTimeout(()=>{if(cbDot.className.includes("sync"))cbDot.className="cbdot on";},2000);
     }));
+    cbBtns.appendChild(cbBtn("🔍 診斷",null,gasDiag));
     return;
   }
   if(!fbReady){
@@ -910,7 +911,27 @@ function cloudPush(immediate){
 }
 
 // —— GAS 模式（免登入、免金鑰）——
-let gasTimer=null;
+let gasTimer=null,lastSync={remote:0,local:0,at:""};
+
+function fmtTs(t){ if(!t) return "無"; const d=new Date(t); const p=n=>String(n).padStart(2,"0");
+  return `${p(d.getMonth()+1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; }
+
+/** 把雲端回傳的資料統一成 S 物件（相容新舊兩種格式） */
+function normalizeRec(j){
+  let rec=null;
+  if(j.data&&typeof j.data==="object") rec=j.data;
+  else if(typeof j.data==="string"&&j.data.trim()!=""){
+    try{ rec=JSON.parse(j.data); }catch(e){ rec=null; }
+  }
+  if(!rec) return null;
+  if(rec.payload){                       // 舊格式 {payload:"...", updatedAt:...}
+    const inner=JSON.parse(rec.payload);
+    if(!inner._ts) inner._ts=rec.updatedAt||0;
+    return inner;
+  }
+  return rec;
+}
+
 function gasPush(immediate){
   if(!gasOK())return;
   clearTimeout(gasTimer);
@@ -922,48 +943,97 @@ function gasPush(immediate){
       // no-cors：GAS 寫入端無 CORS 標頭，採 fire-and-forget
       await fetch(GAS_URL,{method:"POST",mode:"no-cors",
         headers:{"Content-Type":"text/plain;charset=utf-8"},
-        body:JSON.stringify({secret:GAS_SECRET,payload:JSON.stringify(S),updatedAt:Date.now()}),signal:ctl.signal});
+        body:JSON.stringify({secret:GAS_SECRET,S:S}),signal:ctl.signal});
+      lastSync.local=S._ts;
       cbDot.className="cbdot on";
-      toast("☁️ 已同步到 Sheet");
+      cbText.textContent="☁️ 已同步 · 本機 "+fmtTs(S._ts);
     }catch(e){console.error(e);cbDot.className="cbdot err";cbText.textContent="☁️ 同步失敗："+e.message;}
   },immediate?300:1500);
 }
+
 async function gasPull(silent){
   if(!gasOK())return false;
   const ctl=new AbortController();const tm=setTimeout(()=>ctl.abort(),15000);
   try{
     const res=await fetch(GAS_URL+"?t="+Date.now(),{cache:"no-store",signal:ctl.signal});
     const j=await res.json();
-    if(!j.data){
-      if(!silent)toast("📭 Sheet 尚無紀錄（完成一堂課後會自動寫入）");
+    if(j.ok===false) throw new Error(j.err||"Apps Script 回報錯誤");
+    let rec=null; try{ rec=normalizeRec(j); }catch(e){ rec=null; }
+    if(!rec){
+      if(!silent)toast("📭 Sheet 尚無紀錄");
       cbDot.className="cbdot on";
       return false;
     }
-    const rec=JSON.parse(j.data);
-    const remoteTs=rec._ts||rec.updatedAt||0;
-    const localTs=S._ts||0;
+    const remoteTs=rec._ts||0, localTs=S._ts||0;
+    lastSync={remote:remoteTs,local:localTs,at:fmtTs(Date.now())};
     if(remoteTs>localTs){
       S=Object.assign({done:{},order:{},stretch:{},milk:{},mods:{},combo:{},_ts:remoteTs},rec);
       W.forEach(w=>{if(!S.order[w.w])S.order[w.w]=[0,1,2,3,4,5,6];});
       if(!S.mods)S.mods={};if(!S.combo)S.combo={};
-      save();show(Math.min(cur,W.length-1));markTabs();
-      toast("☁️ 已從 Sheet 取得最新紀錄");
+      save();show(Math.min(cur,W.length-1));markTabs();updateStats();
+      toast("☁️ 已從 Sheet 取得最新紀錄（"+fmtTs(remoteTs)+"）");
       cbDot.className="cbdot on";
+      cbText.textContent="☁️ 已同步 · 雲端 "+fmtTs(remoteTs);
       return true;
     }
     if(localTs>remoteTs){
       gasPush(true);
-      toast("⬆️ 本機紀錄較新，已推送到 Sheet");
+      toast("⬆️ 本機較新，已推送（本機 "+fmtTs(localTs)+" / 雲端 "+fmtTs(remoteTs)+"）");
     }else{
       cbDot.className="cbdot on";
-      toast("✅ 雲端與本機紀錄一致");
+      toast("✅ 雲端與本機一致（"+fmtTs(remoteTs)+"）");
     }
     return true;
   }catch(e){
     console.warn("GAS 讀取失敗",e);
-    toast("❌ 連線失敗："+e.message);cbDot.className="cbdot err";
+    toast("❌ 同步失敗："+(e.message||e));
+    cbDot.className="cbdot err";
+    cbText.textContent="☁️ 同步失敗："+(e.message||e);
     return false;
   }
+}
+
+/** 🔍 診斷：把雲端 / 本機的實際狀態列出來 */
+async function gasDiag(){
+  const rows=[];
+  const cnt=o=>Object.values(o||{}).filter(Boolean).length;
+  rows.push(["本機 _ts", fmtTs(S._ts)]);
+  rows.push(["本機 已完成堂數", cnt(S.done)]);
+  rows.push(["本機 已改距離", Object.keys(S.mods||{}).length]);
+  let raw="";
+  try{
+    const res=await fetch(GAS_URL+"?t="+Date.now(),{cache:"no-store"});
+    const txt=await res.text();
+    raw=txt.slice(0,120);
+    const j=JSON.parse(txt);
+    if(j.ok===false) throw new Error(j.err||"回報錯誤");
+    const rec=normalizeRec(j);
+    if(!rec){
+      rows.push(["雲端資料","（空 — 「紀錄」A1 沒有內容）"]);
+    }else{
+      rows.push(["雲端 _ts", fmtTs(rec._ts||0)]);
+      rows.push(["雲端 已完成堂數", cnt(rec.done)]);
+      rows.push(["雲端 已改距離", Object.keys(rec.mods||{}).length]);
+      rows.push(["比較結果", (rec._ts||0)>(S._ts||0)?"雲端較新 → 同步應會下載":((S._ts||0)>(rec._ts||0)?"本機較新 → 同步應會上傳":"相同")]);
+    }
+  }catch(e){
+    rows.push(["讀取失敗", (e.message||e)+"｜原始回應："+raw]);
+  }
+  const html='<div style="max-width:520px"><h3 style="margin:0 0 10px">🔍 同步診斷</h3>'
+    +'<table style="width:100%;border-collapse:collapse;font-size:13px">'
+    +rows.map(([k,v])=>`<tr><td style="padding:6px 8px;border-bottom:1px solid #eee;color:#666">${k}</td><td style="padding:6px 8px;border-bottom:1px solid #eee;font-weight:600">${String(v)}</td></tr>`).join("")
+    +'</table><p style="font-size:12px;color:#888;margin:12px 0 0">截圖這個畫面給我，我就能準確判斷問題。</p></div>';
+  const ov=document.createElement("div");
+  ov.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px";
+  const bx=document.createElement("div");
+  bx.style.cssText="background:#fff;border-radius:14px;padding:20px;max-height:80vh;overflow:auto";
+  bx.innerHTML=html;
+  const btn=document.createElement("button");
+  btn.textContent="關閉";btn.style.cssText="margin-top:12px;padding:8px 18px;border-radius:8px;border:none;background:#e03131;color:#fff;font-weight:600;cursor:pointer";
+  btn.onclick=()=>ov.remove();
+  bx.appendChild(btn);ov.appendChild(bx);
+  ov.onclick=e=>{if(e.target===ov)ov.remove();};
+  document.body.appendChild(ov);
 }
 
 function startRealtime(){
