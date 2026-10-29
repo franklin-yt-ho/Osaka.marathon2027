@@ -794,8 +794,9 @@ function renderCloudUI(){
     cbState("on","☁️ 紀錄同步：Google Sheet 模式（Apps Script）· 自動同步中");
     cbBtns.appendChild(cbBtn("🔄 立即同步",null,async()=>{
       cbDot.className="cbdot sync";
-      const ok=await gasPull(true);
+      const ok=await gasPull(false);
       if(!ok){gasPush(true);toast("⬆️ 已把本機紀錄推送到 Sheet");}
+      else setTimeout(()=>{if(cbDot.className.includes("sync"))cbDot.className="cbdot on";},2000);
     }));
     return;
   }
@@ -914,13 +915,14 @@ function gasPush(immediate){
   if(!gasOK())return;
   clearTimeout(gasTimer);
   gasTimer=setTimeout(async()=>{
+    const ctl=new AbortController();const tm=setTimeout(()=>ctl.abort(),15000);
     try{
       cbDot.className="cbdot sync";
       S._ts=Date.now();save();
       // no-cors：GAS 寫入端無 CORS 標頭，採 fire-and-forget
       await fetch(GAS_URL,{method:"POST",mode:"no-cors",
         headers:{"Content-Type":"text/plain;charset=utf-8"},
-        body:JSON.stringify({secret:GAS_SECRET,payload:JSON.stringify(S),updatedAt:Date.now()})});
+        body:JSON.stringify({secret:GAS_SECRET,payload:JSON.stringify(S),updatedAt:Date.now()}),signal:ctl.signal});
       cbDot.className="cbdot on";
       toast("☁️ 已同步到 Sheet");
     }catch(e){console.error(e);cbDot.className="cbdot err";cbText.textContent="☁️ 同步失敗："+e.message;}
@@ -928,11 +930,13 @@ function gasPush(immediate){
 }
 async function gasPull(silent){
   if(!gasOK())return false;
+  const ctl=new AbortController();const tm=setTimeout(()=>ctl.abort(),15000);
   try{
-    const res=await fetch(GAS_URL+"?t="+Date.now(),{cache:"no-store"});
+    const res=await fetch(GAS_URL+"?t="+Date.now(),{cache:"no-store",signal:ctl.signal});
     const j=await res.json();
     if(!j.data){
       if(!silent)toast("📭 Sheet 尚無紀錄（完成一堂課後會自動寫入）");
+      cbDot.className="cbdot on";
       return false;
     }
     const rec=JSON.parse(j.data);
@@ -943,19 +947,21 @@ async function gasPull(silent){
       W.forEach(w=>{if(!S.order[w.w])S.order[w.w]=[0,1,2,3,4,5,6];});
       if(!S.mods)S.mods={};if(!S.combo)S.combo={};
       save();show(Math.min(cur,W.length-1));markTabs();
-      if(!silent)toast("☁️ 已從 Sheet 取得最新紀錄");
+      toast("☁️ 已從 Sheet 取得最新紀錄");
+      cbDot.className="cbdot on";
       return true;
     }
     if(localTs>remoteTs){
       gasPush(true);
-      if(!silent)toast("⬆️ 本機紀錄較新，已推送到 Sheet");
-    }else if(!silent){
+      toast("⬆️ 本機紀錄較新，已推送到 Sheet");
+    }else{
+      cbDot.className="cbdot on";
       toast("✅ 雲端與本機紀錄一致");
     }
     return true;
   }catch(e){
     console.warn("GAS 讀取失敗",e);
-    if(!silent){toast("❌ 連線失敗："+e.message);cbDot.className="cbdot err";}
+    toast("❌ 連線失敗："+e.message);cbDot.className="cbdot err";
     return false;
   }
 }
