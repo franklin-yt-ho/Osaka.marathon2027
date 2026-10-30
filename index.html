@@ -103,6 +103,7 @@
   .btn:hover{background:#e8e2da;color:var(--text)}
   .card.done .btn{background:rgba(12,166,120,.12);color:var(--ok)}
   .km{font-size:10px;color:var(--muted);margin-top:4px}
+  .garmin{font-size:10.5px;color:var(--ok);margin-top:4px;font-weight:600;white-space:pre-line}
   .tag{font-size:10px;padding:2px 7px;border-radius:6px;font-weight:700}
   .t-speed{background:rgba(255,92,108,.15);color:var(--speed)}
   .t-mpace{background:rgba(255,159,67,.15);color:var(--mpace)}
@@ -245,6 +246,9 @@
   <div class="panels">
     <div class="panel"><h4>🎯 本週訓練重點</h4><ul id="focus"></ul></div>
     <div class="panel advice"><h4>💡 教練建議</h4><ul id="advice"></ul></div>
+    <div class="panel" id="coachPanel" style="display:none"><h4>🤖 AI 教練評語</h4>
+      <div id="coachBody" style="font-size:13px;line-height:1.7;white-space:pre-wrap"></div>
+      <button class="btn" id="coachBtn" style="margin-top:8px">🤖 生成本週評語</button></div>
   </div>
 
   <div class="rec">
@@ -502,9 +506,10 @@ const SHEET_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQSMazAaVWI2z4W
 // 部署方法見檔案底部註解；取得 Web App 網址後貼到下方
 const GAS_URL="https://script.google.com/macros/s/AKfycbxWjn4nyxKoxOdB73F6FExDbvAxQgIHpPdeekYD6g7Xw-8KOPAKF3HvaavDMGuiXG1S/exec";
 const GAS_SECRET="osaka2027"; // 自訂暗號，與 Apps Script 內一致即可
+const ENH=false; // 🔧 三大新功能開關（Garmin 同步 / AI 教練 / 週報圖）：做好基礎同步後改 true 開啟
 const gasOK=()=>!String(GAS_URL).startsWith("PASTE_");
-let S=JSON.parse(localStorage.getItem(KEY)||'null')||{done:{},order:{},stretch:{},milk:{},mods:{},combo:{}};
-if(!S.mods)S.mods={};if(!S.combo)S.combo={};
+let S=JSON.parse(localStorage.getItem(KEY)||'null')||{done:{},order:{},stretch:{},milk:{},mods:{},combo:{},garmin:{},coach:{},notes:{}};
+if(!S.mods)S.mods={};if(!S.combo)S.combo={};if(!S.garmin)S.garmin={};if(!S.coach)S.coach={};if(!S.notes)S.notes={};
 const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
 W.forEach((w,i)=>{w.days=D[i]; if(!S.order[w.w]) S.order[w.w]=[0,1,2,3,4,5,6];});
 
@@ -525,6 +530,12 @@ const weekKm=wi=>W[wi].days.reduce((a,d,i)=>a+dayKm(W[wi],i),0);
 const MN=["","一月","二月","三月","四月","五月","六月","七月","八月","九月","十月","十一月","十二月"];
 function weekStart(w){const m=w.d.match(/^(\d+)\/(\d+)/);const mo=+m[1],dy=+m[2];return new Date(mo>=7?2025:2026,mo-1,dy);}
 function monthTotals(){const plan={},done={};W.forEach((ww,wi)=>{const s0=weekStart(ww);order(ww.w).forEach((di,slot)=>{const d=ww.days[di];if(d[0]==="rest"||d[0]==="travel")return;const dt=new Date(s0);dt.setDate(dt.getDate()+slot);const k=dt.getFullYear()+"-"+(dt.getMonth()+1);plan[k]=(plan[k]||0)+dayKm(ww,di);if(S.done[ww.w+"_"+di])done[k]=(done[k]||0)+dayKm(ww,di);});});return{plan,done};}
+
+// —— Garmin 實際數據：以「該週起始日 + slot」推算日期 → "Y-M-D" ——
+function slotDate(w,slot){const s0=weekStart(w);const dt=new Date(s0);dt.setDate(dt.getDate()+slot);
+  return dt.getFullYear()+"-"+(dt.getMonth()+1)+"-"+dt.getDate();}
+const fmtPace=p=>{if(!p)return "";const m=Math.floor(p),s=Math.round((p-m)*60);return m+"'"+String(s).padStart(2,"0")+'"';};
+const fmtDur=m=>{if(m==null)return "";const h=Math.floor(m/60),mm=m%60;return h>0?h+"時"+mm+"分":mm+"分";};
 
 // 修改彈窗
 const modal=document.createElement("div");modal.className="modal";
@@ -555,6 +566,30 @@ document.getElementById("mSave").onclick=()=>{
   toast("✏️ 訓練紀錄已更新");
 };
 
+// Strong 重訓紀錄貼上彈窗
+const noteModal=document.createElement("div");noteModal.className="modal";
+noteModal.innerHTML=`<div class="mbox"><h3>💪 重訓紀錄（貼上 Strong 文字）</h3><div class="msub" id="nSub"></div>
+  <textarea id="nText" rows="7" style="width:100%;border-radius:10px;border:1.5px solid #ddd;padding:10px;font-size:13px;resize:vertical" placeholder="在 Strong App 點「分享訓練」→ 複製文字 → 貼到這裡&#10;例如：&#10;Squat 4×8 @ 60kg&#10;Bench Press 3×10 @ 40kg"></textarea>
+  <div class="mbtns"><button class="cc" id="nCancel">取消</button><button class="ok" id="nSave">儲存</button></div></div>`;
+document.body.appendChild(noteModal);
+let noteKey=null;
+function openNote(k,label){
+  noteKey=k;
+  document.getElementById("nSub").textContent=label;
+  document.getElementById("nText").value=S.notes[k]||"";
+  noteModal.classList.add("show");
+  setTimeout(()=>document.getElementById("nText").focus(),50);
+}
+document.getElementById("nCancel").onclick=()=>noteModal.classList.remove("show");
+noteModal.addEventListener("click",e=>{if(e.target===noteModal)noteModal.classList.remove("show");});
+document.getElementById("nSave").onclick=()=>{
+  const v=document.getElementById("nText").value.trim();
+  if(!v)delete S.notes[noteKey];else S.notes[noteKey]=v;
+  save();noteModal.classList.remove("show");
+  renderGrid();cloudPush();
+  toast("💪 重訓紀錄已儲存");
+};
+
 const barsEl=document.getElementById("bars");
 function renderBars(){
   barsEl.innerHTML="";
@@ -582,7 +617,7 @@ function show(i){
   document.getElementById("focus").innerHTML=w.focus.map(f=>`<li>▸ ${f}</li>`).join("");
   document.getElementById("advice").innerHTML=w.advice.map(f=>`<li>▸ ${f}</li>`).join("");
 
-  renderGrid();updateStats();renderRec();renderBars();
+  renderGrid();updateStats();renderRec();renderBars();renderCoach();
   document.getElementById("prev").disabled=i===0;
   document.getElementById("next").disabled=i===W.length-1;
   window.scrollTo({top:0,behavior:"smooth"});
@@ -604,16 +639,24 @@ function renderGrid(){
     if(type==="lsd"&&showKm>=15)det+="\n<span class=\'tip\'>🥤 補給：每 45 分鐘吞一包能量膠 + 補充 250ml 水/電解質</span>";
     const hasCombo=type==="easy"&&/Combo/.test(detail);
     const ck=w.w+"_"+di;
+    const gact=S.garmin[slotDate(w,slot)];
+    const note=S.notes[ck];
+    const gline=gact?`<div class="garmin">🏃 實際 ${gact.dist?gact.dist+"km":""}${gact.min?" · "+fmtDur(gact.min):""}${gact.pace?" · 配速 "+fmtPace(gact.pace):""}${gact.hr?" · "+gact.hr+"bpm":""}<br><span style="opacity:.65">${gact.name||""}</span></div>`:"";
+    const nline=note?`<div class="garmin">💪 ${note.replace(/</g,"&lt;").slice(0,120)}${note.length>120?"…":""}</div>`:"";
     card.innerHTML=`<div class="hd"><span>${DOW[slot]}</span><span class="tag ${CLS[type].split(" ")[1]}">${TN[type]}</span></div>
       <div class="nm">${name}</div><div class="dt">${det}</div>
       ${showKm?`<div class="km">📏 約 ${showKm} km${mod?(mod.min?` · ⏱ ${mod.min} 分`:"")+" ✏️":`（計劃）`}</div>`:""}
+      ${gline}${nline}
       ${(type==="rest"||type==="travel")?"":`<button class="btn">${S.done[w.w+"_"+di]?"✓ 已完成（點擊取消）":"標記完成"}</button>`}
       ${isRun?`<button class="btn editbtn">✏️ 修改距離/時間</button>`:""}
+      ${(ENH&&type==="gym")?`<button class="btn gymbtn">💪 ${note?"查看/編輯訓練紀錄":"貼上 Strong 訓練"}</button>`:""}
       ${hasCombo?`<button class="btn combobtn${S.combo[ck]?" on":""}">📺 跑後電視 Combo 10 分鐘 ${S.combo[ck]?"✓":""}</button>`:""}`;
     const btn=card.querySelector(".btn");
     if(btn)btn.onclick=()=>{const k=w.w+"_"+di;S.done[k]=!S.done[k];if(!S.done[k])delete S.done[k];save();renderGrid();updateStats();markTabs();cloudPush();};
     const ebtn=card.querySelector(".editbtn");
     if(ebtn)ebtn.onclick=e=>{e.stopPropagation();openEdit(w,di);};
+    const ybtn=card.querySelector(".gymbtn");
+    if(ybtn)ybtn.onclick=e=>{e.stopPropagation();openNote(w.w+"_"+di,name.replace(/<[^>]+>/g,""));};
     const cbtn=card.querySelector(".combobtn");
     if(cbtn)cbtn.onclick=()=>{const k=w.w+"_"+di;S.combo[k]=!S.combo[k];if(!S.combo[k])delete S.combo[k];save();renderGrid();cloudPush();};
 
@@ -799,6 +842,8 @@ function renderCloudUI(){
       else setTimeout(()=>{if(cbDot.className.includes("sync"))cbDot.className="cbdot on";},2000);
     }));
     cbBtns.appendChild(cbBtn("🔍 診斷",null,gasDiag));
+    if(ENH){cbBtns.appendChild(cbBtn("🏃 Garmin 同步",null,garminSyncWeb));
+    cbBtns.appendChild(cbBtn("📸 週報圖",null,weeklyReport));}
     return;
   }
   if(!fbReady){
@@ -915,6 +960,7 @@ let gasTimer=null,lastSync={remote:0,local:0,at:""};
 
 function fmtTs(t){ if(!t) return "無"; const d=new Date(t); const p=n=>String(n).padStart(2,"0");
   return `${p(d.getMonth()+1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; }
+const cntDone=o=>Object.values(o&&o.done||{}).filter(Boolean).length;
 
 /** 把雲端回傳的資料統一成 S 物件（相容新舊兩種格式） */
 function normalizeRec(j){
@@ -966,23 +1012,31 @@ async function gasPull(silent){
     }
     const remoteTs=rec._ts||0, localTs=S._ts||0;
     lastSync={remote:remoteTs,local:localTs,at:fmtTs(Date.now())};
-    if(remoteTs>localTs){
-      S=Object.assign({done:{},order:{},stretch:{},milk:{},mods:{},combo:{},_ts:remoteTs},rec);
-      W.forEach(w=>{if(!S.order[w.w])S.order[w.w]=[0,1,2,3,4,5,6];});
-      if(!S.mods)S.mods={};if(!S.combo)S.combo={};
-      save();show(Math.min(cur,W.length-1));markTabs();updateStats();
-      toast("☁️ 已從 Sheet 取得最新紀錄（"+fmtTs(remoteTs)+"）");
-      cbDot.className="cbdot on";
-      cbText.textContent="☁️ 已同步 · 雲端 "+fmtTs(remoteTs);
-      return true;
-    }
-    if(localTs>remoteTs){
-      gasPush(true);
-      toast("⬆️ 本機較新，已推送（本機 "+fmtTs(localTs)+" / 雲端 "+fmtTs(remoteTs)+"）");
+    // 🔀 合併策略：打卡等「事實」永遠取聯集，不會互相覆蓋
+    const before=JSON.stringify([S.done,S.mods,S.notes||{},S.garmin||{}]);
+    ["done","stretch","milk","combo","notes","garmin"].forEach(k=>{
+      if(!S[k])S[k]={};
+      Object.keys(rec[k]||{}).forEach(x=>{ if(rec[k][x]&&!S[k][x])S[k][x]=rec[k][x]; });
+    });
+    Object.keys(rec.mods||{}).forEach(x=>{
+      if(!S.mods[x]||((rec.mods[x].km||0)>(S.mods[x].km||0)))S.mods[x]=rec.mods[x];
+    });
+    if(rec.order)S.order=Object.assign({},S.order,rec.order);
+    Object.keys(rec.coach||{}).forEach(x=>{
+      const a=S.coach[x],b=rec.coach[x];
+      if(!a||(b.at||0)>(a.at||0))S.coach[x]=b;
+    });
+    S._ts=Math.max(remoteTs,localTs);
+    const changed=JSON.stringify([S.done,S.mods,S.notes||{},S.garmin||{}])!==before;
+    save();show(Math.min(cur,W.length-1));markTabs();updateStats();
+    if(changed){
+      toast("☁️ 已從 Sheet 合併紀錄（雲端 "+cntDone(rec)+" 堂 / 本機 "+cntDone({done:S.done})+" 堂）");
+      gasPush(true);   // 把合併結果寫回，兩邊完全一致
     }else{
       cbDot.className="cbdot on";
-      toast("✅ 雲端與本機一致（"+fmtTs(remoteTs)+"）");
+      toast("✅ 雲端與本機一致（"+fmtTs(S._ts)+"）");
     }
+    cbDot.className="cbdot on";
     return true;
   }catch(e){
     console.warn("GAS 讀取失敗",e);
@@ -1034,6 +1088,137 @@ async function gasDiag(){
   bx.appendChild(btn);ov.appendChild(bx);
   ov.onclick=e=>{if(e.target===ov)ov.remove();};
   document.body.appendChild(ov);
+}
+
+/** 🤖 AI 教練評語 */
+function renderCoach(){
+  document.getElementById("coachPanel").style.display=ENH?"":"none";
+  if(!ENH)return;
+  const c=S.coach["W"+W[cur].w];
+  const el=document.getElementById("coachBody");
+  el.innerHTML=c?c.text.replace(/&/g,"&amp;").replace(/</g,"&lt;"):"（尚未生成——完成本週訓練後按下方按鈕）";
+  document.getElementById("coachBtn").textContent=c?"🔄 重新生成":"🤖 生成本週評語";
+}
+async function requestCoach(){
+  const w=W[cur],wn=w.w;
+  const btn=document.getElementById("coachBtn");
+  btn.disabled=true;btn.textContent="⏳ AI 教練思考中…（約 10-20 秒）";
+  try{
+    const days=[];
+    order(w.w).forEach((di,slot)=>{
+      const d=w.days[di];if(d[0]==="rest"||d[0]==="travel")return;
+      const g=S.garmin[slotDate(w,slot)];
+      const mod=S.mods[wn+"_"+di];
+      let actual="";
+      if(S.done[wn+"_"+di]){
+        actual="完成"+(mod&&mod.km?mod.km+"km":(d[3]?d[3]+"km":""));
+        if(mod&&mod.min)actual+=" / "+mod.min+"分";
+        if(g)actual+="（Garmin："+(g.dist?g.dist+"km":"")+(g.pace?" 配速"+fmtPace(g.pace):"")+(g.hr?" "+g.hr+"bpm":"")+"）";
+      }
+      days.push({plan:d[1].replace(/<[^>]+>/g,"")+(d[3]?"（"+d[3]+"km）":""),actual:actual});
+    });
+    const res=await fetch(GAS_URL,{method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify({secret:GAS_SECRET,action:"coach",week:{wn:wn,title:w.t,dates:w.d,days:days}})});
+    const j=await res.json();
+    if(!j.ok)throw new Error(j.err||"不明錯誤");
+    S.coach["W"+wn]={text:j.text,at:Date.now()};
+    S._ts=j.ts||Date.now();save();
+    renderCoach();cloudPush();
+    toast("🤖 評語已生成並同步");
+  }catch(e){
+    toast("❌ 生成失敗："+(e.message||e));
+    btn.disabled=false;btn.textContent="🤖 生成本週評語";
+  }
+}
+document.getElementById("coachBtn").onclick=requestCoach;
+
+/** 🏃 Garmin 同步（經 GAS 伺服器端呼叫，金鑰不外洩） */
+async function garminSyncWeb(){
+  toast("⏳ 正在向 Garmin 拉取活動…");
+  try{
+    const res=await fetch(GAS_URL+"?action=garmin&t="+Date.now(),{cache:"no-store"});
+    const j=await res.json();
+    if(!j.ok)throw new Error(j.err||"不明錯誤");
+    Object.assign(S.garmin,j.garmin||{});
+    S._ts=j.ts||Date.now();save();
+    renderGrid();updateStats();cloudPush();
+    toast(j.added?`✅ 新增 ${j.added} 天的活動數據`:"✅ 沒有新活動，已是最新");
+  }catch(e){toast("❌ Garmin 同步失敗："+(e.message||e));}
+}
+
+/** 📸 每週報告 PNG */
+function weeklyReport(){
+  const w=W[cur],wn=w.w;
+  const CW=1080,CH=1620,c=document.createElement("canvas");c.width=CW;c.height=CH;
+  const x=c.getContext("2d");
+  // 背景
+  const bg=x.createLinearGradient(0,0,CW,CH);bg.addColorStop(0,"#fff8f5");bg.addColorStop(1,"#fdeeea");
+  x.fillStyle=bg;x.fillRect(0,0,CW,CH);
+  x.fillStyle="#e03131";x.fillRect(0,0,CW,14);
+  // 標題
+  x.fillStyle="#1c1c22";x.font="bold 44px sans-serif";x.fillText("🏃 "+w.t,CW/2-((w.t.length*44+60)/2),90);
+  x.fillStyle="#666";x.font="26px sans-serif";x.textAlign="center";
+  x.fillText("📅 "+w.d+" · 2027 大阪馬拉松 Sub-4:15",CW/2,140);x.textAlign="left";
+  // 統計條
+  const planKm=weekKm(cur),doneKm=W[cur].days.reduce((a,d,i)=>a+(S.done[wn+"_"+i]?dayKm(w,i):0),0);
+  const doneN=W[cur].days.filter((d,i)=>S.done[wn+"_"+i]&&d[0]!=="rest"&&d[0]!=="travel").length;
+  const totN=W[cur].days.filter(d=>d[0]!=="rest"&&d[0]!=="travel").length;
+  x.fillStyle="#fff";x.strokeStyle="#f1d9d4";x.lineWidth=2;
+  rr(x,60,180,CW-120,150,20);x.fill();x.stroke();
+  x.fillStyle="#333";x.font="bold 30px sans-serif";
+  x.fillText(`完成 ${doneN} / ${totN} 課　·　計劃 ${planKm}km　·　已跑 ${Math.round(doneKm*10)/10}km`,100,240);
+  x.fillStyle="#eee";rr(x,100,280,CW-200,26,13);x.fill();
+  x.fillStyle="#e03131";rr(x,100,280,(CW-200)*Math.min(1,doneKm/(planKm||1)),26,13);x.fill();
+  // 每日列表
+  let y=390;
+  x.font="bold 30px sans-serif";x.fillStyle="#e03131";x.fillText("📋 每日訓練",60,y);y+=26;
+  order(w.w).forEach((di,slot)=>{
+    const d=w.days[di];y+=16;
+    const g=S.garmin[slotDate(w,slot)],note=S.notes[wn+"_"+di],mod=S.mods[wn+"_"+di];
+    const isDone=S.done[wn+"_"+di];
+    x.fillStyle="#fff";rr(x,60,y,CW-120,10,0);x.fill();x.fillStyle="#f6e3df";rr(x,60,y,CW-120,96,16);x.fill();
+    // 狀態點
+    x.beginPath();x.arc(100,y+48,14,0,7);x.fillStyle=isDone?"#2f9e44":(d[0]==="rest"?"#ccc":"#f1f3f5");x.fill();
+    x.fillStyle="#1c1c22";x.font="bold 24px sans-serif";
+    let head=DOW[slot]+" · "+TN[d[0]]+(d[3]?"（計劃 "+d[3]+"km）":"");
+    if(mod&&mod.km)head+=" → 實際 "+mod.km+"km"+(mod.min?" / "+mod.min+"分":"");
+    x.fillText(head,130,y+30);
+    x.fillStyle="#666";x.font="20px sans-serif";
+    let sub=d[1].replace(/<[^>]+>/g,"").slice(0,40);
+    x.fillText(sub,130,y+62);
+    if(g){x.fillStyle="#2b8a3e";x.font="bold 20px sans-serif";
+      x.fillText("🏃 "+(g.dist?g.dist+"km":"")+(g.min?" "+fmtDur(g.min):"")+(g.pace?" 配速"+fmtPace(g.pace):"")+(g.hr?" "+g.hr+"bpm":""),130,y+88);}
+    if(note){x.fillStyle="#1971c2";x.font="18px sans-serif";x.fillText("💪 "+note.slice(0,50),130,y+88+(g?0:26));}
+    y+=110;
+  });
+  // AI 評語
+  const coach=S.coach["W"+wn];
+  if(coach){
+    y+=10;x.fillStyle="#e03131";x.font="bold 30px sans-serif";x.fillText("🤖 AI 教練評語",60,y);y+=44;
+    x.fillStyle="#fff";rr(x,60,y,CW-120,Math.min(360,60+coach.text.length/2.2),20);x.fill();
+    x.fillStyle="#333";x.font="22px sans-serif";
+    wrapText(x,coach.text,90,y+40,CW-150,32,10);
+  }
+  x.fillStyle="#999";x.font="20px sans-serif";x.textAlign="center";
+  x.fillText(" Osaka Marathon 2027 Training Dashboard · "+new Date().toLocaleDateString("zh-HK"),CW/2,CH-40);x.textAlign="left";
+  const a=document.createElement("a");
+  a.download=`W${wn}_訓練週報_${w.d.replace(/[\/–]/g,"-")}.png`;
+  a.href=c.toDataURL("image/png");a.click();
+  toast("📸 週報已下載");
+}
+function rr(x,px,py,w,h,r){x.beginPath();x.moveTo(px+r,py);x.arcTo(px+w,py,px+w,py+h,r);x.arcTo(px+w,py+h,px,py+h,r);x.arcTo(px,py+h,px,py,r);x.arcTo(px,py,px+w,py,r);x.closePath();}
+function wrapText(x,text,px,py,mw,lh,maxLines){
+  const lines=[];let line="";
+  text.split("\n").forEach(seg=>{
+    line="";
+    for(const ch of seg){
+      if(x.measureText(line+ch).width>mw){lines.push(line);line=ch;if(lines.length>=maxLines)return;}
+      else line+=ch;
+    }
+    lines.push(line);
+  });
+  lines.slice(0,maxLines).forEach((l,i)=>x.fillText(l,px,py+i*lh));
 }
 
 function startRealtime(){
